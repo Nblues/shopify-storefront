@@ -1,1 +1,98 @@
-# shopify-storefront
+
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>รถมือสองเชียงราย - หน้าร้าน</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f9f9f9;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    .product {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      margin: 20px auto;
+      padding: 16px;
+      max-width: 600px;
+    }
+    .product img {
+      width: 100%;
+      border-radius: 8px;
+    }
+    .product h2 {
+      font-size: 20px;
+      color: #222;
+      margin: 10px 0 5px;
+    }
+    .product p {
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <h1>รถมือสองเชียงราย</h1>
+  <div id="product-list"></div>
+
+  <script>
+    const domain = 'kn-goodcar.myshopify.com'; // ใช้ Shopify domain ไม่ใช่โดเมนภายนอก
+    const token = 'bb70cb008199a94b83c98df0e45ada67'; // Access token จาก Storefront API
+
+    const query = `
+      {
+        products(first: 10) {
+          edges {
+            node {
+              title
+              description
+              images(first: 1) {
+                edges {
+                  node {
+                    url
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    fetch(\`https://\${domain}/api/2023-07/graphql.json\`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Shopify-Storefront-Access-Token': token,
+      },
+      body: JSON.stringify({ query })
+    })
+    .then(res => res.json())
+    .then(res => {
+      const products = res.data.products.edges;
+      const container = document.getElementById('product-list');
+      products.forEach(({ node }) => {
+        const imageUrl = node.images.edges[0]?.node.url || '';
+        const div = document.createElement('div');
+        div.className = 'product';
+        div.innerHTML = `
+          <img src="\${imageUrl}" alt="\${node.title}" />
+          <h2>\${node.title}</h2>
+          <p>\${node.description}</p>
+        `;
+        container.appendChild(div);
+      });
+    })
+    .catch(error => {
+      console.error('เกิดข้อผิดพลาดในการโหลดสินค้า:', error);
+    });
+  </script>
+</body>
+</html>
